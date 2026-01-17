@@ -1,23 +1,26 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const connectDB = require('./config/db'); // <--- 1. Import the file
 
 // Load env vars
 dotenv.config();
+
+// Connect to Database
+connectDB(); // <--- 2. Run the connection
 
 // Initialize app
 const app = express();
 
 // Middleware
-app.use(express.json()); // Allows us to parse JSON bodies
-app.use(cors()); // Enables frontend to talk to backend
+app.use(express.json());
+app.use(cors());
 
-// Basic Route (Test)
+// Basic Route
 app.get('/', (req, res) => {
   res.send('NeuroForge API is running...');
 });
 
-// Start Server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

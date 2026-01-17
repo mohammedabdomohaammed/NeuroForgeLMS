@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # 1. The Database
+  mongo:
+    image: mongo:7.0
+    container_name: neuroforge_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  # 2. The Main Backend (Node.js)
+  backend:
+    build: ./backend
+    container_name: neuroforge_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/neuroforge
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  # 3. The AI Brain (Python)
+  aiservice:
+    build: ./aiservice
+    container_name: neuroforge_ai
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+
+  # 4. The Frontend (React)
+  frontend:
+    build: ./frontend
+    container_name: neuroforge_client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:

@@ -1,13 +1,14 @@
-// src/pages/Login.tsx
+// src/pages/Register.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import toast, { Toaster } from 'react-hot-toast';
 
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,16 +21,17 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Call Backend
-      const { data } = await api.post('/users/login', { email, password });
+      // 1. Call Register API
+      const { data } = await api.post('/users', { name, email, password });
       
-      // Save Token & Redirect
+      // 2. Auto-Login the user
       login(data);
-      toast.success('Welcome back!');
+      
+      toast.success('Account created successfully!');
       navigate('/dashboard'); 
       
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -41,11 +43,20 @@ const Login = () => {
       
       <div className="w-full max-w-md bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">NeuroForge</h1>
-          <p className="text-slate-400">Enter the system</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Join NeuroForge</h1>
+          <p className="text-slate-400">Start your AI career journey</p>
         </div>
 
         <form onSubmit={handleSubmit}>
+          <Input 
+            label="Full Name" 
+            type="text" 
+            placeholder="Shah Mohammad Rizvi"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+
           <Input 
             label="Email Address" 
             type="email" 
@@ -65,14 +76,14 @@ const Login = () => {
           />
 
           <Button type="submit" isLoading={isLoading} className="mt-6">
-            Sign In
+            Create Account
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-slate-400">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-violet-400 hover:text-violet-300 font-medium">
-            Register
+          Already have an account?{' '}
+          <Link to="/login" className="text-violet-400 hover:text-violet-300 font-medium">
+            Sign In
           </Link>
         </p>
       </div>
@@ -80,4 +91,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

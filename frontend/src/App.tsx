@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProblemDetail from './pages/ProblemDetail';
+import Register from './pages/Register';
 import { useAuth } from './hooks/useAuth';
 
 // A wrapper to protect routes (Dashboard shouldn't be public)
@@ -17,10 +18,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Route */}
+        {/* --- Public Routes ( accessible without login ) --- */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-        {/* Protected Route: Real Dashboard */}
+        {/* --- Protected Routes ( require login ) --- */}
         <Route 
           path="/dashboard" 
           element={
@@ -29,6 +31,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        
         <Route
           path="/problems/:id"
           element={

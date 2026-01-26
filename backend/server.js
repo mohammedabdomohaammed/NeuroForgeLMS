@@ -7,7 +7,7 @@ const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const problemRoutes = require('./routes/problemRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
-
+const interviewRoutes = require('./routes/interviewRoutes');
 // Load env vars
 dotenv.config();
 

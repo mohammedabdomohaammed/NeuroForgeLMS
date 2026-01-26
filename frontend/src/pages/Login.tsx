@@ -64,7 +64,13 @@ const Login = () => {
             required
           />
 
-          <Button type="submit" isLoading={isLoading} className="mt-6">
+          <div className="flex justify-end mb-6">
+            <Link to="/forgot-password" className="text-xs text-violet-400 hover:text-violet-300">
+              Forgot Password?
+            </Link>
+          </div>
+
+          <Button type="submit" isLoading={isLoading}>
             Sign In
           </Button>
         </form>

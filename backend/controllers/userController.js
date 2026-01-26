@@ -71,7 +71,59 @@ const authUser = async (req, res) => {
   }
 };
 
+// @desc    Request Password Reset
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate a simple random token (Simulation)
+    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    
+    // In a real app, you would email this link.
+    // For this prototype, we return it in the response so you can test it immediately.
+    res.json({
+      message: 'Reset link generated (Simulation)',
+      resetLink: `http://localhost:5173/reset-password/${user._id}/${resetToken}` 
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Reset Password
+// @route   POST /api/users/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  const { userId, password } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update password (hashing is handled by the model's pre-save hook)
+    user.password = password;
+    await user.save();
+
+    res.json({ message: 'Password reset successful! You can now login.' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Reset failed' });
+  }
+};
+
 module.exports = {
   registerUser,
   authUser,
+  forgotPassword,
+  resetPassword,
 };

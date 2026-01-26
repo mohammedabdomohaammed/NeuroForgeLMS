@@ -6,12 +6,13 @@ import {
   Code2, 
   Bot, 
   LogOut, 
-  User 
-} from 'lucide-react'; // Icons
+  User,
+  ShieldAlert // New Icon for Admin
+} from 'lucide-react'; 
 import { useAuth } from '../../hooks/useAuth';
 
 const Sidebar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth(); // <--- Get User info
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -47,6 +48,23 @@ const Sidebar = () => {
             {item.name}
           </NavLink>
         ))}
+
+        {/* ADMIN LINK - Only visible if role is admin */}
+        {user?.role === 'admin' && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors mt-6 ${
+                isActive
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                  : 'text-slate-400 hover:bg-red-900/10 hover:text-red-400'
+              }`
+            }
+          >
+            <ShieldAlert className="w-5 h-5" />
+            Admin Control
+          </NavLink>
+        )}
       </nav>
 
       {/* Logout Button */}

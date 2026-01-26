@@ -7,6 +7,10 @@ import ProblemDetail from './pages/ProblemDetail';
 import AIInterview from './pages/AIInterview';
 import Profile from './pages/Profile';
 import { useAuth } from './hooks/useAuth';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import CreateProblem from './pages/admin/CreateProblem';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
@@ -23,6 +27,8 @@ function App() {
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:userId/:token" element={<ResetPassword />} />
 
         {/* Protected Routes */}
         <Route 
@@ -33,6 +39,23 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        {/* Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/create-problem" 
+          element={
+            <ProtectedRoute>
+              <CreateProblem />
+            </ProtectedRoute>
+          } 
+        />  
         
         {/* Problem Set (List View) */}
         <Route 

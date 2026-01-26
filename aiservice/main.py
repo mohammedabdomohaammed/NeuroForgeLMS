@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Optional
 import sys
 import io
 import traceback
@@ -19,6 +20,8 @@ app.add_middleware(
 )
 
 # --- Data Models ---
+
+# 1. Models for Code Execution
 class TestCase(BaseModel):
     input: str
     output: str
@@ -26,6 +29,16 @@ class TestCase(BaseModel):
 class CodeSubmission(BaseModel):
     code: str
     test_cases: list[TestCase]
+
+# 2. Models for AI Interview
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class InterviewRequest(BaseModel):
+    message: str
+    history: List[ChatMessage]
+
 
 # --- Routes ---
 
@@ -39,7 +52,6 @@ def execute_code(submission: CodeSubmission):
     all_passed = True
     
     # 1. Define the safe context for execution
-    # We allow standard built-ins but restrict dangerous globals
     allowed_globals = {"__builtins__": __builtins__}
     
     for i, case in enumerate(submission.test_cases):
@@ -50,9 +62,6 @@ def execute_code(submission: CodeSubmission):
         
         try:
             # 2. Prepare the execution script
-            # We assume the code defines a function. We grab the function name 
-            # and call it with the test input.
-            
             # Detect function name (assuming simple "def name(...):")
             func_name = submission.code.split('def ')[1].split('(')[0]
             
@@ -71,8 +80,7 @@ result = {func_name}(input_val)
             # 4. Get Result
             user_result = local_scope.get('result')
             
-            # Convert results to string for comparison (handling lists, etc.)
-            # We normalize spaces (remove them) to avoid formatting errors
+            # Convert results to string for comparison
             user_result_str = str(user_result).replace(" ", "")
             expected_str = case.output.replace(" ", "")
             
@@ -124,3 +132,36 @@ result = {func_name}(input_val)
         "passed": all_passed,
         "results": console_output
     }
+
+@app.post("/interview")
+def interview_chat(request: InterviewRequest):
+    user_msg = request.message.lower()
+    
+    # 🧠 "Mock LLM" Logic
+    # This simulates an interviewer context awareness without needing an API Key.
+    
+    reply = ""
+    
+    if "ready" in user_msg or "start" in user_msg or "begin" in user_msg:
+        reply = "Great! Let's start with a classic system design concept. Can you explain the difference between a Process and a Thread?"
+    
+    elif "thread" in user_msg and "process" in user_msg:
+        reply = "That's a solid definition. A key follow-up: Why is context switching faster in threads compared to processes?"
+    
+    elif "memory" in user_msg or "shared" in user_msg or "address space" in user_msg:
+        reply = "Exactly! Threads share the same memory space, making switching cheaper. Now, let's switch topics. What is the time complexity of a Binary Search?"
+    
+    elif "log" in user_msg or "n" in user_msg:
+        reply = "Correct (O(log n)). Final question: If you had to scale a Python application to handle 10,000 concurrent requests, would you use Multithreading or AsyncIO? Explain why."
+    
+    elif "async" in user_msg or "io" in user_msg:
+        reply = "Spot on. Python's GIL limits threads, so AsyncIO is much better for I/O bound tasks like web requests. You've passed the theoretical round! 🎉"
+    
+    elif "hello" in user_msg or "hi" in user_msg:
+        reply = "Hello there! I am your AI Technical Interviewer. Are you ready to begin the evaluation?"
+
+    else:
+        # Generic fallback to keep conversation going
+        reply = "Interesting point. Can you elaborate on how that applies to scalable distributed systems?"
+
+    return {"reply": reply}

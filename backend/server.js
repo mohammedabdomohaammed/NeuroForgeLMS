@@ -1,13 +1,15 @@
+// backend/server.js
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-// Mount Route files
+// Import Route files
 const userRoutes = require('./routes/userRoutes');
 const problemRoutes = require('./routes/problemRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
+
 // Load env vars
 dotenv.config();
 
@@ -21,11 +23,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-//Mount Routes
+// Mount Routes
 app.use('/api/users', userRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
-app.use('/api/interviews', interviewRoutes);
+app.use('/api/interview', interviewRoutes); // <--- FIXED: Changed to singular '/api/interview'
 
 // Basic Route
 app.get('/', (req, res) => {
@@ -35,5 +37,5 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

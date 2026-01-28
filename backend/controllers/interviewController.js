@@ -1,3 +1,4 @@
+// backend/controllers/interviewController.js
 const axios = require('axios');
 
 // @desc    Chat with AI Interviewer
@@ -8,7 +9,7 @@ const chatWithAI = async (req, res) => {
     const { message, history } = req.body;
 
     // Call Python Service
-    // In a real app, we might also save the chat logs to MongoDB here
+    // Ensure your Python service is running on port 8000
     const pythonResponse = await axios.post('http://localhost:8000/interview', {
       message,
       history

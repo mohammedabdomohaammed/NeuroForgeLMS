@@ -6,6 +6,11 @@ import api from '../services/api';
 import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 
+// --- NEW IMPORTS ---
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/atom-one-dark.css'; // Syntax Highlighting Theme
+
 interface Message {
   role: 'user' | 'ai';
   content: string;
@@ -19,7 +24,6 @@ const AIInterview = () => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -31,21 +35,18 @@ const AIInterview = () => {
     if (!input.trim()) return;
 
     const userMsg = input;
-    setInput(''); // Clear input immediately
+    setInput('');
     
-    // 1. Add User Message to UI
     const newHistory = [...messages, { role: 'user', content: userMsg } as Message];
     setMessages(newHistory);
     setLoading(true);
 
     try {
-      // 2. Send entire history to Backend
       const { data } = await api.post('/interview/chat', {
         message: userMsg,
-        history: newHistory // Sending context so AI knows what was said before
+        history: newHistory 
       });
 
-      // 3. Add AI Response
       setMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
       
     } catch (error) {
@@ -84,13 +85,45 @@ const AIInterview = () => {
                 {msg.role === 'ai' ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
               </div>
 
-              {/* Bubble */}
-              <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+              {/* Bubble with Markdown Support */}
+              <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
                   ? 'bg-emerald-600 text-white rounded-tr-sm' 
-                  : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm'
+                  : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm shadow-sm'
               }`}>
-                {msg.content}
+                {msg.role === 'ai' ? (
+                  /* RENDER AI MARKDOWN */
+                  <div className="markdown-body text-slate-300">
+                    <ReactMarkdown
+                      rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        // Style code blocks specifically
+                        code: ({node, className, children, ...props}) => {
+                          const match = /language-(\w+)/.exec(className || '')
+                          return match ? (
+                            <div className="rounded-md overflow-hidden my-2 border border-slate-700">
+                                <div className="bg-slate-900 px-3 py-1 text-xs text-slate-500 border-b border-slate-700 flex justify-between">
+                                    <span>{match[1]}</span>
+                                </div>
+                                <code className={`${className} block bg-slate-950 p-3 overflow-x-auto`} {...props}>
+                                    {children}
+                                </code>
+                            </div>
+                          ) : (
+                            <code className="bg-slate-700/50 px-1 py-0.5 rounded text-emerald-300 font-mono text-xs" {...props}>
+                              {children}
+                            </code>
+                          )
+                        }
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  /* RENDER USER TEXT */
+                  <span>{msg.content}</span>
+                )}
               </div>
             </div>
           ))}
@@ -114,7 +147,7 @@ const AIInterview = () => {
           <input
             type="text"
             className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
-            placeholder="Ask about Python lists, async, or debugging..."
+            placeholder="Ask for Python code examples..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}

@@ -13,9 +13,12 @@ const ProblemDetail = () => {
   const [problem, setProblem] = useState<any>(null);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   
-  // New State for Python Output
+  // States for buttons
+  const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
+  
+  // Console Output
   const [output, setOutput] = useState<string | null>(null);
 
   // Fetch problem details on load
@@ -35,19 +38,52 @@ const ProblemDetail = () => {
     fetchProblem();
   }, [id]);
 
+  // Handle "Run" (Dry Run)
+  const handleRun = async () => {
+    setRunning(true);
+    setOutput(null);
+    try {
+      const { data } = await api.post('/submissions/run', {
+        problemId: id,
+        code: code
+      });
+      
+      // Format the output for the console
+      let display = "--- Execution Logs ---\n";
+      display += (data.logs || "No print output.") + "\n\n";
+      display += "--- Test Results ---\n";
+      
+      data.results.forEach((res: any) => {
+         // Check if there was an execution/syntax error
+         if (res.error) {
+           display += `❌ Case ${res.case === 0 ? 'Start' : res.case}: Execution Error\n   ${res.error}\n`;
+         } else {
+           const icon = res.passed ? "✅" : "❌";
+           display += `${icon} Case ${res.case}: Expected '${res.expected}' -> Got '${res.actual}'\n`;
+         }
+      });
+
+      setOutput(display);
+      toast.success('Execution Complete');
+    } catch (error) {
+      toast.error('Run failed');
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  // Handle "Submit" (Grading)
   const handleSubmit = async () => {
     setSubmitting(true);
-    setOutput(null); // Clear previous output
+    setOutput(null); 
     try {
-      // Call Backend which calls Python Service
       const { data } = await api.post('/submissions', {
         problemId: id,
         code: code,
         language: 'python'
       });
       
-      toast.success('Code Executed!');
-      // Update the console with the response
+      toast.success('Code Submitted!');
       setOutput(data.output);
       
     } catch (error) {
@@ -113,7 +149,8 @@ const ProblemDetail = () => {
               <Button 
                 variant="secondary" 
                 className="!py-1.5 !px-3 text-xs"
-                onClick={() => toast('Run feature coming in Phase 3!', { icon: '🚧' })}
+                onClick={handleRun}
+                isLoading={running}
               >
                 <Play className="w-3 h-3 mr-2" /> Run
               </Button>
@@ -144,7 +181,7 @@ const ProblemDetail = () => {
             />
           </div>
 
-          {/* Output Console (New Addition) */}
+          {/* Output Console */}
           <div className="h-48 bg-slate-950 border-t border-slate-800 p-4 font-mono text-sm overflow-y-auto">
             <div className="flex items-center gap-2 text-slate-500 mb-2">
               <div className="w-2 h-2 rounded-full bg-slate-600" />

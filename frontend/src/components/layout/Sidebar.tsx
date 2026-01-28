@@ -3,34 +3,33 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Code2, 
+  BookOpen, // Changed icon
   Bot, 
   LogOut, 
   User,
-  ShieldAlert // New Icon for Admin
+  ShieldAlert 
 } from 'lucide-react'; 
 import { useAuth } from '../../hooks/useAuth';
 
 const Sidebar = () => {
-  const { logout, user } = useAuth(); // <--- Get User info
+  const { logout, user } = useAuth();
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Problem Set', path: '/problems', icon: Code2 },
-    { name: 'AI Interview', path: '/interview', icon: Bot },
-    { name: 'Profile', path: '/profile', icon: User },
+    { name: 'Python Curriculum', path: '/problems', icon: BookOpen }, // Renamed
+    { name: 'AI Tutor', path: '/tutor', icon: Bot }, // Renamed path
+    { name: 'My Profile', path: '/profile', icon: User },
   ];
 
   return (
     <div className="h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed left-0 top-0">
-      {/* Logo Area */}
       <div className="p-6 border-b border-slate-800">
         <h1 className="text-2xl font-bold text-white tracking-tight">
-          Neuro<span className="text-violet-500">Forge</span>
+          Py<span className="text-emerald-500">Forge</span>
         </h1>
+        <p className="text-xs text-slate-500 mt-1">Master Python & AI</p>
       </div>
 
-      {/* Navigation Links */}
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => (
           <NavLink
@@ -39,7 +38,7 @@ const Sidebar = () => {
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-violet-600/10 text-violet-400 border border-violet-600/20'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`
             }
@@ -49,7 +48,6 @@ const Sidebar = () => {
           </NavLink>
         ))}
 
-        {/* ADMIN LINK - Only visible if role is admin */}
         {user?.role === 'admin' && (
           <NavLink
             to="/admin"
@@ -67,7 +65,6 @@ const Sidebar = () => {
         )}
       </nav>
 
-      {/* Logout Button */}
       <div className="p-4 border-t border-slate-800">
         <button
           onClick={logout}

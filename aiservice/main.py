@@ -2,15 +2,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any
 import sys
 import io
 import traceback
 
-# Initialize App
 app = FastAPI()
 
-# Enable CORS (So React can talk to this)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,18 +17,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Data Models ---
+# --- Models ---
 
-# 1. Models for Code Execution
+# 1. Execution Models
 class TestCase(BaseModel):
     input: str
     output: str
 
-class CodeSubmission(BaseModel):
+class CodeExecutionRequest(BaseModel):
     code: str
-    test_cases: list[TestCase]
+    test_cases: List[TestCase]
+    mode: str = "submit"  # "run" or "submit"
 
-# 2. Models for AI Interview
+# 2. Chat/Tutor Models
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -39,64 +38,80 @@ class InterviewRequest(BaseModel):
     message: str
     history: List[ChatMessage]
 
-
 # --- Routes ---
 
 @app.get("/")
 def read_root():
-    return {"status": "NeuroForge AI Service is Online 🧠"}
+    return {"status": "PyForge AI Service is Online 🐍"}
 
 @app.post("/execute")
-def execute_code(submission: CodeSubmission):
+def execute_code(request: CodeExecutionRequest):
     results = []
     all_passed = True
-    
-    # 1. Define the safe context for execution
+    overall_logs = ""
     allowed_globals = {"__builtins__": __builtins__}
-    
-    for i, case in enumerate(submission.test_cases):
-        # Capture stdout to see if user printed anything for debugging
+
+    # 1. Validation: Extract function name before running tests
+    func_name = None
+    try:
+        # Simple check: does the code have "def "?
+        if "def " not in request.code:
+            raise ValueError("No function definition found. Please keep the 'def solution(...):' line.")
+            
+        # Extract name (e.g., "def twoSum(nums):" -> "twoSum")
+        func_name = request.code.split('def ')[1].split('(')[0]
+        
+    except Exception as e:
+        # Return immediate error if syntax is invalid
+        return {
+            "status": "error",
+            "logs": f"Syntax Error: {str(e)}",
+            "results": [{
+                "case": 0,
+                "passed": False,
+                "error": str(e)
+            }]
+        }
+
+    # 2. Run Test Cases
+    for i, case in enumerate(request.test_cases):
         old_stdout = sys.stdout
         redirected_output = io.StringIO()
         sys.stdout = redirected_output
         
         try:
-            # 2. Prepare the execution script
-            # Detect function name (assuming simple "def name(...):")
-            func_name = submission.code.split('def ')[1].split('(')[0]
-            
-            # Helper script to run the specific test case
+            # Prepare Runner Script using the extracted func_name
             run_script = f"""
-{submission.code}
-
-# Test Case Execution
-input_val = {case.input}
-result = {func_name}(input_val)
+{request.code}
+try:
+    input_val = {case.input}
+    result = {func_name}(input_val)
+except Exception as e:
+    raise e
 """
-            # 3. Execute!
             local_scope = {}
             exec(run_script, allowed_globals, local_scope)
             
-            # 4. Get Result
             user_result = local_scope.get('result')
-            
-            # Convert results to string for comparison
             user_result_str = str(user_result).replace(" ", "")
             expected_str = case.output.replace(" ", "")
             
             passed = user_result_str == expected_str
-            if not passed:
-                all_passed = False
-                
+            if not passed: all_passed = False
+
+            logs = redirected_output.getvalue()
+            if logs:
+                overall_logs += f"--- Case {i+1} Output ---\n{logs}\n"
+
             results.append({
                 "case": i + 1,
                 "passed": passed,
                 "input": case.input,
                 "expected": case.output,
                 "actual": str(user_result),
-                "log": redirected_output.getvalue()
+                "log": logs
             })
-            
+
         except Exception as e:
             all_passed = False
             results.append({
@@ -105,63 +120,67 @@ result = {func_name}(input_val)
                 "error": str(e),
                 "traceback": traceback.format_exc()
             })
-            
         finally:
-            # Restore stdout so the server logs still work
             sys.stdout = old_stdout
 
-    # Format the final output for the frontend console
-    console_output = "Execution Results:\n"
-    console_output += "=" * 20 + "\n"
-    for res in results:
-        status = "✅ PASS" if res['passed'] else "❌ FAIL"
-        console_output += f"Test Case {res['case']}: {status}\n"
-        if not res['passed']:
-            if 'error' in res:
-                console_output += f"   Error: {res['error']}\n"
-            else:
-                console_output += f"   Expected: {res['expected']}\n"
-                console_output += f"   Got:      {res['actual']}\n"
-    
-    if all_passed:
-        console_output += "\n🎉 ALL TEST CASES PASSED!"
+    # 3. Return Response based on Mode
+    if request.mode == "run":
+        return {
+            "status": "executed",
+            "logs": overall_logs if overall_logs else "No print output.",
+            "results": results 
+        }
     else:
-        console_output += "\n⚠️ SOME TESTS FAILED. KEEP TRYING!"
+        # Formatting for "Submit" (Grading)
+        console_output = "Execution Results:\n" + "="*20 + "\n"
+        for res in results:
+            status = "✅ PASS" if res['passed'] else "❌ FAIL"
+            console_output += f"Test Case {res['case']}: {status}\n"
+            if not res['passed']:
+                if 'error' in res:
+                    console_output += f"   Error: {res['error']}\n"
+                else:
+                    console_output += f"   Expected: {res['expected']}\n   Got:      {res['actual']}\n"
+        
+        if all_passed: console_output += "\n🎉 ALL TEST CASES PASSED!"
+        else: console_output += "\n⚠️ SOME TESTS FAILED."
 
-    return {
-        "passed": all_passed,
-        "results": console_output
-    }
+        return {
+            "passed": all_passed,
+            "results": console_output
+        }
 
 @app.post("/interview")
 def interview_chat(request: InterviewRequest):
     user_msg = request.message.lower()
     
-    # 🧠 "Mock LLM" Logic
-    # This simulates an interviewer context awareness without needing an API Key.
+    # 🧠 "AI Python Tutor" Logic
+    # We recognize keywords to give specific Python help.
     
     reply = ""
     
-    if "ready" in user_msg or "start" in user_msg or "begin" in user_msg:
-        reply = "Great! Let's start with a classic system design concept. Can you explain the difference between a Process and a Thread?"
+    if "list" in user_msg and "comprehension" in user_msg:
+        reply = "List comprehensions are a concise way to create lists. \nSyntax: `[expression for item in iterable if condition]`\nExample: `squares = [x**2 for x in range(10)]`"
     
-    elif "thread" in user_msg and "process" in user_msg:
-        reply = "That's a solid definition. A key follow-up: Why is context switching faster in threads compared to processes?"
+    elif "dictionary" in user_msg or "dict" in user_msg:
+        reply = "Dictionaries are key-value pairs in Python. You can access values using `my_dict['key']` or safely using `my_dict.get('key')`. Do you want to know about iterating over dicts?"
     
-    elif "memory" in user_msg or "shared" in user_msg or "address space" in user_msg:
-        reply = "Exactly! Threads share the same memory space, making switching cheaper. Now, let's switch topics. What is the time complexity of a Binary Search?"
+    elif "decorator" in user_msg:
+        reply = "Decorators are functions that modify the behavior of other functions. They are often used for logging, access control, or caching. They use the `@symbol` syntax."
     
-    elif "log" in user_msg or "n" in user_msg:
-        reply = "Correct (O(log n)). Final question: If you had to scale a Python application to handle 10,000 concurrent requests, would you use Multithreading or AsyncIO? Explain why."
+    elif "gil" in user_msg:
+        reply = "The Global Interpreter Lock (GIL) is a mutex that allows only one thread to hold the control of the Python interpreter. This means CPU-bound threads won't see much speedup, but I/O-bound tasks (like web requests) will!"
     
-    elif "async" in user_msg or "io" in user_msg:
-        reply = "Spot on. Python's GIL limits threads, so AsyncIO is much better for I/O bound tasks like web requests. You've passed the theoretical round! 🎉"
+    elif "async" in user_msg or "await" in user_msg:
+        reply = "Async/Await allows for non-blocking code execution. It's great for high-performance network applications. You run an async function using `asyncio.run(main())`."
     
+    elif "debug" in user_msg or "error" in user_msg or "fix" in user_msg:
+        reply = "I can help with debugging! Paste your code snippet here, and I'll analyze it for common Python pitfalls."
+        
     elif "hello" in user_msg or "hi" in user_msg:
-        reply = "Hello there! I am your AI Technical Interviewer. Are you ready to begin the evaluation?"
+        reply = "Hello! I am your AI Python Tutor. Ask me anything about Python syntax, libraries (Pandas, NumPy), or debugging!"
 
     else:
-        # Generic fallback to keep conversation going
-        reply = "Interesting point. Can you elaborate on how that applies to scalable distributed systems?"
+        reply = "That's an interesting Python topic. Could you provide a code snippet or be more specific about the concept (e.g. Lists, Async, OOP) so I can help you better?"
 
     return {"reply": reply}

@@ -25,6 +25,7 @@ app.use(cors());
 app.use('/api/users', userRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/interviews', interviewRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

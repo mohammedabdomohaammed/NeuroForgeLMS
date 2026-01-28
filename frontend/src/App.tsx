@@ -1,10 +1,11 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Problems from './pages/Problems';
 import ProblemDetail from './pages/ProblemDetail';
-import AIInterview from './pages/AIInterview';
+import AIInterview from './pages/AIInterview'; // We kept the file name as is
 import Profile from './pages/Profile';
 import { useAuth } from './hooks/useAuth';
 import ForgotPassword from './pages/ForgotPassword';
@@ -39,6 +40,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        
         {/* Admin Routes */}
         <Route 
           path="/admin" 
@@ -57,7 +59,7 @@ function App() {
           } 
         />  
         
-        {/* Problem Set (List View) */}
+        {/* Curriculum / Problem Set */}
         <Route 
           path="/problems" 
           element={
@@ -67,7 +69,7 @@ function App() {
           } 
         />
 
-        {/* Single Problem (Detail View) */}
+        {/* Single Problem Detail */}
         <Route 
           path="/problems/:id" 
           element={
@@ -77,9 +79,9 @@ function App() {
           } 
         />
 
-        {/* AI Interview (Placeholder) */}
+        {/* AI Tutor (UPDATED PATH) */}
         <Route 
-          path="/interview" 
+          path="/tutor" 
           element={
             <ProtectedRoute>
               <AIInterview />
@@ -87,7 +89,7 @@ function App() {
           } 
         />
 
-        {/* Profile (Placeholder) */}
+        {/* Profile */}
         <Route 
           path="/profile" 
           element={

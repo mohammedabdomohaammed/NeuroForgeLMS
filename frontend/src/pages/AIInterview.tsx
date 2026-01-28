@@ -13,7 +13,7 @@ interface Message {
 
 const AIInterview = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: "Hello! I am the NeuroForge AI Interviewer. I'm here to test your knowledge on System Design and Python algorithms. Are you ready to begin?" }
+    { role: 'ai', content: "Hello! I am your AI Python Tutor. I can explain complex concepts, help you debug code, or teach you best practices. What are we learning today?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,7 @@ const AIInterview = () => {
       setMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
       
     } catch (error) {
-      toast.error('Failed to reach the Interviewer');
+      toast.error('Failed to reach the Tutor');
     } finally {
       setLoading(false);
     }
@@ -61,12 +61,12 @@ const AIInterview = () => {
         
         {/* Header */}
         <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center gap-3">
-          <div className="w-10 h-10 bg-violet-600/20 rounded-full flex items-center justify-center">
-            <Bot className="text-violet-400 w-6 h-6" />
+          <div className="w-10 h-10 bg-emerald-600/20 rounded-full flex items-center justify-center">
+            <Bot className="text-emerald-400 w-6 h-6" />
           </div>
           <div>
-            <h1 className="font-bold text-white">AI Technical Interviewer</h1>
-            <p className="text-xs text-slate-400">Powered by NeuroForge Python Engine</p>
+            <h1 className="font-bold text-white">AI Python Tutor</h1>
+            <p className="text-xs text-slate-400">Powered by PyForge Engine</p>
           </div>
         </div>
 
@@ -79,7 +79,7 @@ const AIInterview = () => {
             >
               {/* Avatar */}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.role === 'ai' ? 'bg-violet-600/20 text-violet-400' : 'bg-slate-700 text-slate-300'
+                msg.role === 'ai' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-slate-700 text-slate-300'
               }`}>
                 {msg.role === 'ai' ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
               </div>
@@ -87,7 +87,7 @@ const AIInterview = () => {
               {/* Bubble */}
               <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
-                  ? 'bg-violet-600 text-white rounded-tr-sm' 
+                  ? 'bg-emerald-600 text-white rounded-tr-sm' 
                   : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm'
               }`}>
                 {msg.content}
@@ -97,8 +97,8 @@ const AIInterview = () => {
           
           {loading && (
             <div className="flex gap-4">
-              <div className="w-8 h-8 bg-violet-600/20 rounded-full flex items-center justify-center">
-                <Bot className="text-violet-400 w-5 h-5" />
+              <div className="w-8 h-8 bg-emerald-600/20 rounded-full flex items-center justify-center">
+                <Bot className="text-emerald-400 w-5 h-5" />
               </div>
               <div className="bg-slate-800 px-4 py-3 rounded-2xl rounded-tl-sm border border-slate-700 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
@@ -113,13 +113,13 @@ const AIInterview = () => {
         <form onSubmit={sendMessage} className="p-4 bg-slate-950 border-t border-slate-800 flex gap-3">
           <input
             type="text"
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-500 transition-colors"
-            placeholder="Type your answer here..."
+            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+            placeholder="Ask about Python lists, async, or debugging..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
           />
-          <Button type="submit" disabled={loading || !input.trim()} className="!w-auto px-6">
+          <Button type="submit" disabled={loading || !input.trim()} className="!w-auto px-6 bg-emerald-600 hover:bg-emerald-700">
             <Send className="w-5 h-5" />
           </Button>
         </form>

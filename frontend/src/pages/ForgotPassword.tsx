@@ -1,3 +1,4 @@
+// src/pages/ForgotPassword.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '../components/ui/Input';
@@ -7,18 +8,15 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [link, setLink] = useState(''); // To show the simulated link
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setLink('');
 
     try {
-      const { data } = await api.post('/users/forgot-password', { email });
-      toast.success('Reset link generated!');
-      setLink(data.resetLink); // Show link for testing
+      await api.post('/users/forgot-password', { email });
+      toast.success('Reset link sent to your email!');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to request reset');
     } finally {
@@ -45,15 +43,6 @@ const ForgotPassword = () => {
             Send Reset Link
           </Button>
         </form>
-
-        {link && (
-          <div className="mt-6 p-4 bg-violet-900/20 border border-violet-500/30 rounded-lg">
-            <p className="text-xs text-violet-300 font-mono break-all">
-              <strong>Dev Mode Link:</strong><br/>
-              <a href={link} className="underline hover:text-white">{link}</a>
-            </p>
-          </div>
-        )}
 
         <div className="mt-6 text-center">
           <Link to="/login" className="text-sm text-slate-400 hover:text-white">

